@@ -4,6 +4,7 @@ import threading
 import pystray
 import tendo.singleton
 import os.path
+import sys
 from PIL import Image
 
 me = tendo.singleton.SingleInstance("HuaweiPenEraserService")
@@ -16,15 +17,21 @@ class Pen:
     def __init__(self, lib_paths: str=[
                  r"C:\Program Files\Huawei\PCManager\components\accessories_center\accessories_app\AccessoryApp\Lib\Plugins\Depend\PenService.dll",
                  r"C:\Program Files\WindowsApps\HuaweiPC.HuaweiPenAPP_1.0.1.0_x64__amfdc1pkdnmaa\HuaweiPenAPP\PenService.dll"
+                 r"C:\Windows\PenService.dll"
                 ],
                  logger: "function"=print) -> None:
         # 加载笔函数库
         self.PenService = None
-        for lib_path in lib_paths:
-            self.PenService = ctypes.cdll.LoadLibrary(lib_path)
-            if self.PenService: break
         self.log = logger
-        self.pen()
+        for lib_path in lib_paths:
+            try:
+                self.PenService = ctypes.cdll.LoadLibrary(lib_path)
+            except: pass
+            if self.PenService: break
+        if self.PenService:
+            self.pen()
+        else:
+            raise Exception(r"无法加载华为笔服务函数库，请安装华为电脑管家或者 HuaweiPenApp，或者将提取的 PenService.dll 放置于 C:\Windows\PenService.dll")
     # 切换笔事件监听器为 Ink 工作区        
     def init_ink_workspace_handler(self) -> None:
         self.PenService.CommandSendSetPenKeyFunc(2)
@@ -86,7 +93,12 @@ icon = pystray.Icon("Eraser Service", menu=menu)
 
 
 if __name__ == "__main__":
-    pen = Pen()
+    try:
+        global pen
+        pen = Pen()
+    except Exception as e:
+        ctypes.windll.user32.MessageBoxW(None, e.args[0], "错误", 0x00000010)
+        sys.exit(1)
     kbd_thread = threading.Thread(target=kbd_thread_gen(pen), daemon=True)
     kbd_thread.start()
     icon_change(False)
