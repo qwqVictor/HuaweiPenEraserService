@@ -90,7 +90,12 @@ def stop():
     global icon
     icon.stop()
 
-menu = (pystray.MenuItem(text='退出', action=stop),)
+def fixup_ink_workspace():
+    global pen
+    pen.init_ink_workspace_handler()
+
+menu = (pystray.MenuItem(text='修复 Windows Ink 事件监听', action=fixup_ink_workspace),
+        pystray.MenuItem(text='退出', action=stop))
 icon = pystray.Icon("Eraser Service", menu=menu)
 
 
