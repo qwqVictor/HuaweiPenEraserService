@@ -29,11 +29,13 @@ class Pen:
             except: pass
             if self.PenService: break
         if self.PenService:
+            self.init_ink_workspace_handler()
             self.pen()
         else:
             raise Exception(r"无法加载华为笔服务函数库，请安装华为电脑管家或者 HuaweiPenApp，或者将提取的 PenService.dll 放置于 C:\Windows\PenService.dll")
     # 切换笔事件监听器为 Ink 工作区        
     def init_ink_workspace_handler(self) -> None:
+        self.log('切换事件监听器')
         self.PenService.CommandSendSetPenKeyFunc(2)
     
     # 切换笔模式为橡皮擦
