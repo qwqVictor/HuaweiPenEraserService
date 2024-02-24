@@ -5,6 +5,7 @@ import pystray
 import tendo.singleton
 import os.path
 import sys
+import time
 from PIL import Image
 
 me = tendo.singleton.SingleInstance("HuaweiPenEraserService")
@@ -94,6 +95,12 @@ def fixup_ink_workspace():
     global pen
     pen.init_ink_workspace_handler()
 
+def loop_ink_workspace_fixup():
+    global pen
+    while True:
+        pen.init_ink_workspace_handler()
+        time.sleep(10)
+
 menu = (pystray.MenuItem(text='修复 Windows Ink 事件监听', action=fixup_ink_workspace),
         pystray.MenuItem(text='退出', action=stop))
 icon = pystray.Icon("Eraser Service", menu=menu)
@@ -111,6 +118,8 @@ if __name__ == "__main__":
     icon_change(False)
     icon_thread = threading.Thread(target=icon.run)
     icon_thread.start()
+    ink_fixup_thread = threading.Thread(target=loop_ink_workspace_fixup, daemon=True)
+    ink_fixup_thread.start()
     icon_thread.join()
 
 
